@@ -1,0 +1,61 @@
+#!/bin/bash
+
+SRM_SERVICE="srm://srm-eoscms.cern.ch:8443/srm/v2/server?SFN="
+SRM_BASEPATH="/eos/cms/store/"
+
+basename() {
+  # This shell function is faster than calling /bin/basename 
+  path=$1
+  suffix=$2
+  path=${path##*/}  # get everything after the final '/'
+  if [ ! -z $suffix ]; then
+    path=${path%$suffix}
+  fi
+  echo $path
+}
+
+printUsage() {
+ echo "USAGE: `basename $0` [options]"
+ echo ""
+ echo "OPTIONS:"
+ echo "   --srm-service=${SRM_SERVICE} (set SRM service URL)"
+ echo "   --srm-base-path=${SRM_BASEPATH} (set the SRM basepath)"
+ echo ""
+ echo "NOTE: The name of the output file is set from the ntuple name!"
+}
+
+OPTS=`getopt -o "h" -l "help,srm-service:,srm-base-path:" -- "$@"`
+if [ $? -ne 0 ]; then printUsage; fi
+eval set -- "$OPTS"
+
+while [ ! -z "$1" ]
+do
+  case "$1" in
+    -h) printUsage; exit;;
+    --help) printUsage; exit;;    
+    --srm-service) shift; SRM_SERVICE=$1;;
+    --srm-base-path) shift; SRM_BASEPATH=$1;;
+    --) shift; break;;
+    *) die "Unexpected option $1";;
+  esac
+  shift
+done
+
+SRM_BASE="${SRM_SERVICE}${SRM_BASEPATH}"
+
+TREE_DIR=
+
+USER_DIRS="jkunkle abelloni"
+TEMP="$@"
+if [ "$TEMP" != "" ]; then  
+  USER_DIRS=$@
+fi
+
+for user_dir in $USER_DIRS; do
+  LCGDIR=$SRM_BASE/user/${user_dir}/${LNuAA_ANALYSIS_DIR}/${LNuAA_ANALYSIS_REVISION}  
+  TEMP=`lcg-ls -bD srmv2 $LCGDIR | grep /job_`
+  for a in $TEMP; do
+    echo `basename $a`
+  done  
+done
+

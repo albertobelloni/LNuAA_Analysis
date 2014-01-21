@@ -1,0 +1,146 @@
+#!/bin/bash
+
+NTUPLE_USERS="abelloni jkunkle"
+SRM_SERVICE="srm://srm-eoscms.cern.ch:8443/srm/v2/server?SFN="
+SRM_BASEPATH="/eos/cms/store"
+XRDSERVER="eoscms.cern.ch"
+
+
+realpath() {
+  readlink -f "$1"
+}
+
+basename() {
+  # This shell function is faster than calling /bin/basename 
+  path=$1
+  suffix=$2
+  path=${path##*/}  # get everything after the final '/'
+  if [ ! -z $suffix ]; then
+    path=${path%$suffix}
+  fi
+  echo $path
+}
+
+logerror() {
+  echo 2>&1 "$@"
+}
+
+die() {
+  if [ $# -gt 0 ]; then
+    logerror
+    logerror "$@"
+  fi
+  exit 1
+}
+
+cleanUp() {
+  for a in $@; do
+    rm -rf $a
+  done
+}
+
+printUsage() {
+ echo "USAGE: `basename $0` [options] /path/to/analyzer.py <ntuple name> <output directory>"
+ echo ""
+ echo "OPTIONS:"
+ echo "   --number-of-workers=N (default = # of cores as in /proc/cpuinfo)"
+ echo "   --input-users=`echo ${NTUPLE_USERS} | tr ' ' ','` (custodial usernames for ntuples)"
+ echo "   --xrootd-server=${XRDSERVER} (set the xrootd input server)"
+ echo "   --srm-service=${SRM_SERVICE} (set SRM service URL)"
+ echo "   --srm-base-path=${SRM_BASEPATH} (set the SRM basepath)"
+ echo ""
+ echo "NOTE: The name of the output file is set from the ntuple name!"
+}
+
+OPTS=`getopt -o "h" -l "help,number-of-workers:,input-users:,xrootd-server:,srm-service:,srm-base-path:" -- "$@"`
+if [ $? -ne 0 ]; then printUsage; fi
+eval set -- "$OPTS"
+
+NWORKERS=`cat /proc/cpuinfo | grep processor | wc -l`
+
+while [ ! -z "$1" ]
+do
+  case "$1" in
+    -h) printUsage; exit;;
+    --help) printUsage; exit;;
+    --number-of-workers) shift; NWORKERS=$1;;
+    --input-users) shift; NTUPLE_USERS=`echo $1 | tr ',' ' '`;;
+    --xrootd-server) shift; XRDSERVER=$1;;
+    --srm-service) shift; SRM_SERVICE=$1;;
+    --srm-base-path) shift; SRM_BASEPATH=$1;;
+    --) shift; break;;
+    *) die "Unexpected option $1";;
+  esac
+  shift
+done
+
+ANALYZER=`realpath $1`
+NTUPLE_NAME=$2
+OUTPUT_DIR=$3
+
+if [ "$1" == "" ] || [ "$2" == "" ] || [ "$3" == "" ]; then
+  printUsage
+  exit
+fi
+ 
+OUTPUT_NAME=${NTUPLE_NAME}_megaoutput.root
+OUTPUT_TMP=/tmp/${USER}/`basename ${OUTPUT_NAME%.*}`
+if [ ! -d $OUTPUT_TMP ]; then
+ mkdir -p $OUTPUT_TMP
+fi
+
+OUTPUT_PATH=${OUTPUT_DIR}/${OUTPUT_NAME}
+OUTPUT_TMP_PATH=${OUTPUT_TMP}/${OUTPUT_NAME}
+
+NTUPLE_DIR=`find_ntuple_directory ${NTUPLE_NAME} ${SRM_SERVICE} ${SRM_BASEPATH} ${NTUPLE_USERS}`
+JOBS_TO_PROCESS=
+
+if [ "$NTUPLE_DIR" == "" ]; then
+  die "Ntuple \"${NTUPLE_NAME}\" does not exist in user directories: ${NTUPLE_USERS}"
+else
+  JOBS_TO_PROCESS=`lcg-ls -bD srmv2 ${SRM_SERVICE}${NTUPLE_DIR} | grep /Job_`  
+fi
+#turn it into one-file-per line input for MEGA
+FILES_TO_PROCESS=
+for job in $JOBS_TO_PROCESS; do  
+  FILES_TO_PROCESS+="${job#/eos/cms}/tree.root "
+done
+echo $FILES_TO_PROCESS | tr ' ' '\n' > $OUTPUT_TMP/input_files.txt
+
+time mega --xrootdserver=$XRDSERVER --workers=${NWORKERS} ${ANALYZER} \
+      ${OUTPUT_TMP}/input_files.txt ${OUTPUT_TMP_PATH} 
+
+if [ ! -f $OUTPUT_TMP_PATH ]; then
+  die "MEGA failed to produce output file for job: $NTUPLE_NAME"
+else
+  echo "Processed ntuples for job: $NTUPLE_NAME"
+fi 
+
+if [[ $OUTPUT_DIR == "root:"* ]]; then
+  xrdcp $OUTPUT_TMP_PATH $OUTPUT_PATH
+  if [ $? -ne 0 ]; then
+    echo "xrdcp command failed to move your output!"
+    exit 1
+  else
+    echo "Moved MEGA output to directory: ${OUTPUT_PATH}"
+  fi
+elif [[ $OUTPUT_DIR == "/store"* ]]; then
+  xrdcp $OUTPUT_TMP_PATH root://${XRDSERVER}/${OUTPUT_PATH}
+  if [ $? -ne 0 ]; then
+    echo "xrdcp command failed to move your output!"
+    exit 1
+  else
+    echo echo "Moved MEGA output to directory: root://${XRDSERVER}/${OUTPUT_PATH}"
+  fi  
+else
+  mkdir -p $OUTPUT_DIR
+  if [ $? -ne 0 ]; then 
+    echo "Failed to make output directory: ${OUTPUT_DIR}"
+    exit 1
+  else
+    mv $OUTPUT_TMP_PATH $OUTPUT_PATH
+    echo "Moved MEGA output to directory: ${OUTPUT_PATH}"
+  fi
+fi
+
+cleanUp $OUTPUT_TMP
