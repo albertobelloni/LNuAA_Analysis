@@ -5,6 +5,7 @@ SRM_SERVICE="srm://srm-eoscms.cern.ch:8443/srm/v2/server?SFN="
 SRM_BASEPATH="/eos/cms/store"
 XRDSERVER="eoscms.cern.ch"
 
+proxy=${X509_USER_PROXY:-/tmp/x509up_u$UID}
 
 realpath() {
   readlink -f "$1"
@@ -33,6 +34,35 @@ die() {
   exit 1
 }
 
+check_proxy() {
+  hours=$1
+  proxy=$2
+  if ! [ -f "$proxy" ]; then
+    logerror
+    logerror "NOTE: No grid proxy found.  (Expecting to find it here: $proxy.)"
+    return 1
+  fi
+
+  #Issue a warning if less than this many seconds remain:
+  min_proxy_lifetime=$((3600*$hours))
+
+  seconds_left="`voms-proxy-info --timeleft --file=$proxy 2>/dev/null`"
+
+  if [ "$seconds_left" = "" ]; then
+    echo "WARNING: cannot find time remaining for grid proxy."
+    voms-proxy-info -all -path $proxy
+    return 0
+  fi
+  if [ "$seconds_left" -lt "$min_proxy_lifetime" ]; then
+    logerror
+    logerror "NOTE: grid proxy is about to expire:"
+    logerror "voms-proxy-info"
+    voms-proxy-info --file=$proxy
+    return 1
+  fi
+
+}
+
 cleanUp() {
   for a in $@; do
     rm -rf $a
@@ -55,6 +85,22 @@ printUsage() {
 OPTS=`getopt -o "h" -l "help,number-of-workers:,input-users:,xrootd-server:,srm-service:,srm-base-path:" -- "$@"`
 if [ $? -ne 0 ]; then printUsage; fi
 eval set -- "$OPTS"
+
+if [ "$LNuAA_ANALYSIS_DIR" == "" ]; then
+    logerror
+    logerror "You have not initialized the LNuAA Analysis environment..."
+    logerror "please do the following: \"source $CMSSW_BASE/src/LNuAA_Analysis/environment.sh"
+    die
+fi
+
+if ! check_proxy $MIN_PROXY_HOURS $proxy ; then
+  logerror
+  logerror "Either rerun this command with --no-submit or create a new grid proxy"
+  logerror "and rerun this command.  Example of how to create a grid proxy:"
+  logerror
+  logerror "voms-proxy-init --voms=cms --valid=48:00"
+  die
+fi
 
 NWORKERS=`cat /proc/cpuinfo | grep processor | wc -l`
 

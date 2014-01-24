@@ -3,6 +3,49 @@
 SRM_SERVICE="srm://srm-eoscms.cern.ch:8443/srm/v2/server?SFN="
 SRM_BASEPATH="/eos/cms/store/"
 
+proxy=${X509_USER_PROXY:-/tmp/x509up_u$UID}
+
+logerror() {
+  echo 2>&1 "$@"
+}
+
+die() {
+  if [ $# -gt 0 ]; then
+    logerror
+    logerror "$@"
+  fi
+  exit 1
+}
+
+check_proxy() {
+  hours=$1
+  proxy=$2
+  if ! [ -f "$proxy" ]; then
+    logerror
+    logerror "NOTE: No grid proxy found.  (Expecting to find it here: $proxy.)"
+    return 1
+  fi
+
+  #Issue a warning if less than this many seconds remain:
+  min_proxy_lifetime=$((3600*$hours))
+
+  seconds_left="`voms-proxy-info --timeleft --file=$proxy 2>/dev/null`"
+
+  if [ "$seconds_left" = "" ]; then
+    echo "WARNING: cannot find time remaining for grid proxy."
+    voms-proxy-info -all -path $proxy
+    return 0
+  fi
+  if [ "$seconds_left" -lt "$min_proxy_lifetime" ]; then
+    logerror
+    logerror "NOTE: grid proxy is about to expire:"
+    logerror "voms-proxy-info"
+    voms-proxy-info --file=$proxy
+    return 1
+  fi
+
+}
+
 basename() {
   # This shell function is faster than calling /bin/basename 
   path=$1
@@ -40,6 +83,22 @@ do
   esac
   shift
 done
+
+if [ "$LNuAA_ANALYSIS_DIR" == "" ]; then
+    logerror
+    logerror "You have not initialized the LNuAA Analysis environment..."
+    logerror "please do the following: \"source $CMSSW_BASE/src/LNuAA_Analysis/environment.sh"
+    die
+fi
+
+if ! check_proxy $MIN_PROXY_HOURS $proxy ; then
+  logerror
+  logerror "Either rerun this command with --no-submit or create a new grid proxy"
+  logerror "and rerun this command.  Example of how to create a grid proxy:"
+  logerror
+  logerror "voms-proxy-init --voms=cms --valid=48:00"
+  die
+fi
 
 SRM_BASE="${SRM_SERVICE}${SRM_BASEPATH}"
 

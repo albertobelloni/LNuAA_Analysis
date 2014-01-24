@@ -15,6 +15,10 @@ from LNuAA_Analysis.Analyzers.selection.photon import photon
 from LNuAA_Analysis.Analyzers.selection.topology_cuts import cross_clean, \
      in_ecal_fiducial
 
+from LNuAA_Analysis.Analyzers.selection.object_id_cuts import tight_muon_id, \
+     loose_muon_iso, electron_preselection, triggering_electron_id, \
+     loose_electron_iso, loose_photon_id, loose_photon_iso
+
 # Import various other code used by this module
 # We need this because of the "type = ROOT.TH2F" below
 import ROOT
@@ -41,9 +45,9 @@ class LNuAA_BasicSelectionAnalysis(MegaBase):
     def begin(self):
         """ Let's book some histograms.
 
-        Let's pretend we have two regions in our analysis,
-        "signal" and "sideband."  We'll organize our histograms into
-        directories accordingly.
+        This is configured for four total regions:
+        electron : signal / sideband
+        muon : signal / sideband
 
         The histograms are available via a dictionary called "histograms".
 
@@ -88,6 +92,16 @@ class LNuAA_BasicSelectionAnalysis(MegaBase):
             muons = [muon(row,imu) for imu in xrange(row.nMu)]
             photons = [photon(row,ipho) for ipho in xrange(row.nPho)]
 
+            # select leptons
+            muons = filter(tight_muon_id, muons)
+            muons = filter(loose_muon_iso, muons)
+            electrons = filter(electron_preselection, electrons)
+            electrons = filter(triggering_electron_id, electrons)
+            electrons = filter(loose_electron_iso, electrons)
+            
+            # also kill photons that overlap with a selected electrons
+            photons = filter(lambda x : cross_clean(x,electrons), photons)
+
             #cut on the lepton pT
             electrons = filter(lambda x : x.pt() > 30, electrons)
             muons = filter(lambda x : x.pt() > 30, muons)
@@ -104,10 +118,10 @@ class LNuAA_BasicSelectionAnalysis(MegaBase):
 
             #filter out the photons we will not consider
             # pt lower than 15, outside of ECAL fiducial
-            # also kill photons that overlap with a selected electron
             photons = filter(lambda x : x.pt() > 15, photons)
             photons = filter(in_ecal_fiducial, photons)
-            photons = filter(lambda x : cross_clean(x,electrons), photons)
+            photons = filter(loose_photon_id, photons)
+            photons = filter(loose_photon_iso, photons)
 
             if len(photons) < 2:
                 continue

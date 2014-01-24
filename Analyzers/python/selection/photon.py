@@ -22,3 +22,21 @@ class photon(particle):
 
     def phi(self):
         return self._row.phoPhi[self._index]
+
+    def convSafeElectronVeto(self):
+        return self._row.phoEleVeto[self._index]
+
+    def sigmaIEtaIEta(self):
+        return self._row.phoSigmaIEtaIEta[self._index]
+
+    def towerHoverE(self):
+        return self._row.phoHoverE12[self._index]
+
+    def chargedHadronIsoDR03(self):
+        return self._row.phoPFChIso[self._index]
+
+    def neutralHadronIsoDR03(self):
+        return self._row.phoPFNeuIso[self._index]
+
+    def photonIsoDR03(self):
+        return self._row.phoPFPhoIso[self._index]
