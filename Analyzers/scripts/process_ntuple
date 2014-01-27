@@ -1,6 +1,6 @@
 #!/bin/bash
 
-NTUPLE_USERS="abelloni jkunkle"
+NTUPLE_USERS="jkunkle"
 SRM_SERVICE="srm://srm-eoscms.cern.ch:8443/srm/v2/server?SFN="
 SRM_BASEPATH="/eos/cms/store"
 XRDSERVER="eoscms.cern.ch"
@@ -135,7 +135,7 @@ if [ ! -d $OUTPUT_TMP ]; then
  mkdir -p $OUTPUT_TMP
 fi
 
-OUTPUT_PATH=${OUTPUT_DIR}/${OUTPUT_NAME}
+OUTPUT_PATH=${OUTPUT_DIR}/${NTUPLE_NAME}/megaoutput.root
 OUTPUT_TMP_PATH=${OUTPUT_TMP}/${OUTPUT_NAME}
 
 NTUPLE_DIR=`find_ntuple_directory ${NTUPLE_NAME} ${SRM_SERVICE} ${SRM_BASEPATH} ${NTUPLE_USERS}`
@@ -179,7 +179,7 @@ elif [[ $OUTPUT_DIR == "/store"* ]]; then
     echo echo "Moved MEGA output to directory: root://${XRDSERVER}/${OUTPUT_PATH}"
   fi  
 else
-  mkdir -p $OUTPUT_DIR
+  mkdir -p $OUTPUT_DIR/${NTUPLE_NAME}
   if [ $? -ne 0 ]; then 
     echo "Failed to make output directory: ${OUTPUT_DIR}"
     exit 1
@@ -189,4 +189,4 @@ else
   fi
 fi
 
-cleanUp $OUTPUT_TMP
+#cleanUp $OUTPUT_TMP
