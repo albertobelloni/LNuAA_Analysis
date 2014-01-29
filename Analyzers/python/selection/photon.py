@@ -3,6 +3,9 @@ from ntuple_particle import ntuple_particle as particle
 from ROOT import TVector3
 from math import cosh
 
+_ifsr_parent_mask = 0x12
+_nonprompt_mask   = 0x4
+
 class photon(particle):
     def __init__(self,row,i):
         particle.__init__(self,row,i)
@@ -40,3 +43,14 @@ class photon(particle):
 
     def photonIsoDR03(self):
         return self._row.phoPFPhoIso[self._index]
+
+    def hasIFSRParentage(self):
+        mc_idx = -1
+        for idx in xrange(self._row.nMC):
+            if( self._row.mcIndex[idx] == self._row.phoGenIndex[self._index] ):
+                mc_idx = idx
+                break        
+        if( mc_idx == -1 ):
+            return False;         
+        return ( ( self._row.mcParentage[mc_idx] & _ifsr_parent_mask ) != 0 and
+                 ( self._row.mcParentage[mc_idx] & _nonprompt_mask )   != 0x4 )
