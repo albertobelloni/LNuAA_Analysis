@@ -104,7 +104,9 @@ class LNuAA_BasicSelectionAnalysis(MegaBase):
             electrons = [electron(row,iel) for iel in xrange(row.nEle)]
             muons = [muon(row,imu) for imu in xrange(row.nMu)]
             photons = [photon(row,ipho) for ipho in xrange(row.nPho)]
-            
+
+            if( self.event_veto_mc_photon(photons) ): continue
+
             # select leptons
             muons = filter(tight_muon_id, muons)
             muons = filter(loose_muon_iso, muons)
@@ -159,6 +161,9 @@ class LNuAA_BasicSelectionAnalysis(MegaBase):
                 self.histograms['el_signal/photon2_pT'].Fill(photons[1].pt())
                 self.histograms['el_signal/photon2_eta'].Fill(photons[1].eta())
                 
+
+    def event_veto_mc_photon(self,phos):
+        return False
 
     def finish(self):
         """ Write out your histograms, do fitting, etc... """
