@@ -83,15 +83,28 @@ class LNuAA_BasicSelectionAnalysis(MegaBase):
         """ Our analysis logic. """
         # Loop over the tree
         for row in self.tree:
+            #if( row.phoEta.size() != row.nPho ):
+            #    print self.tree
+            #    print self.outputfile.GetName()
+            #    print 'photon size is weird!', row.phoEta.size(), row.nPho
+            #if( row.eleEta.size() != row.nEle ):
+            #    print 'electron size is weird!', row.eleEta.size(), row.nEle
+            #if( row.muEta.size() != row.nMu ):
+            #    print 'muon size is weird!', row.muEta.size(), row.nMu
             # skip events that don't have any basic objects
-            if( row.nMu == 0 and row.nEle == 0 and row.nPho < 2 ):
+            if( row.muEta.size() != row.nMu or
+                row.eleEta.size() != row.nEle or
+                row.phoEta.size() != row.nPho ):
+                continue
+
+            if( ( row.nMu == 0 and row.nEle == 0 ) or row.nPho < 2 ):
                 continue
             
             #create basic lists of muons/electrons/photons
             electrons = [electron(row,iel) for iel in xrange(row.nEle)]
             muons = [muon(row,imu) for imu in xrange(row.nMu)]
             photons = [photon(row,ipho) for ipho in xrange(row.nPho)]
-
+            
             # select leptons
             muons = filter(tight_muon_id, muons)
             muons = filter(loose_muon_iso, muons)
@@ -101,7 +114,7 @@ class LNuAA_BasicSelectionAnalysis(MegaBase):
             
             # also kill photons that overlap with a selected electrons
             photons = filter(lambda x : cross_clean(x,electrons), photons)
-
+            
             #cut on the lepton pT
             electrons = filter(lambda x : x.pt() > 30, electrons)
             muons = filter(lambda x : x.pt() > 30, muons)

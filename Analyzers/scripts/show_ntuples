@@ -104,7 +104,7 @@ SRM_BASE="${SRM_SERVICE}${SRM_BASEPATH}"
 
 TREE_DIR=
 
-USER_DIRS="jkunkle"
+USER_DIRS=${NTUPLE_USER_DIRS}
 TEMP="$@"
 if [ "$TEMP" != "" ]; then  
   USER_DIRS=$@

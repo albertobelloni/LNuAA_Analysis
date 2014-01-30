@@ -1,6 +1,6 @@
 #!/bin/bash
 
-NTUPLE_USERS="jkunkle"
+NTUPLE_USERS=${NTUPLE_USER_DIRS}
 SRM_SERVICE="srm://srm-eoscms.cern.ch:8443/srm/v2/server?SFN="
 SRM_BASEPATH="/eos/cms/store"
 XRDSERVER="eoscms.cern.ch"
@@ -154,7 +154,7 @@ done
 echo $FILES_TO_PROCESS | tr ' ' '\n' > $OUTPUT_TMP/input_files.txt
 
 time mega --xrootdserver=$XRDSERVER --workers=${NWORKERS} ${ANALYZER} \
-      ${OUTPUT_TMP}/input_files.txt ${OUTPUT_TMP_PATH} 
+      ${OUTPUT_TMP}/input_files.txt ${OUTPUT_TMP_PATH}
 
 if [ ! -f $OUTPUT_TMP_PATH ]; then
   die "MEGA failed to produce output file for job: $NTUPLE_NAME"
@@ -189,4 +189,4 @@ else
   fi
 fi
 
-#cleanUp $OUTPUT_TMP
+cleanUp $OUTPUT_TMP
