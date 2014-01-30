@@ -2,6 +2,12 @@
 
 timestamp=`date | tr ':' '-' | tr ' ' '_'`
  
+
+process_ntuple ../python/LNuAA_AnalysisSingleIFSRVeto.py job_summer12_DYJetsToLL process_all_${timestamp}/
+process_ntuple ../python/LNuAA_AnalysisSingleIFSRVeto.py job_summer12_Wjets process_all_${timestamp}/
+
+process_ntuple ../python/LNuAA_AnalysisDoubleIFSRVeto.py job_summer12_Wg process_all_${timestamp}/
+
 process_ntuple ../python/LNuAA_BasicSelectionAnalysis.py job_electron_2012a_Jan22rereco process_all_${timestamp}/
 process_ntuple ../python/LNuAA_BasicSelectionAnalysis.py job_electron_2012b_Jan22rereco process_all_${timestamp}/
 process_ntuple ../python/LNuAA_BasicSelectionAnalysis.py job_electron_2012c_Jan2012rereco process_all_${timestamp}/
@@ -10,7 +16,6 @@ process_ntuple ../python/LNuAA_BasicSelectionAnalysis.py job_muon_2012a_Jan22rer
 process_ntuple ../python/LNuAA_BasicSelectionAnalysis.py job_muon_2012b_Jan22rereco process_all_${timestamp}/
 process_ntuple ../python/LNuAA_BasicSelectionAnalysis.py job_muon_2012c_Jan22rereco process_all_${timestamp}/
 process_ntuple ../python/LNuAA_BasicSelectionAnalysis.py job_muon_2012d_Jan22rereco process_all_${timestamp}/
-process_ntuple ../python/LNuAA_AnalysisSingleIFSRVeto.py job_summer12_DYJetsToLL process_all_${timestamp}/
 process_ntuple ../python/LNuAA_BasicSelectionAnalysis.py job_summer12_WAA_ISR process_all_${timestamp}/
 process_ntuple ../python/LNuAA_BasicSelectionAnalysis.py job_summer12_WH_ZH_125 process_all_${timestamp}/
 process_ntuple ../python/LNuAA_BasicSelectionAnalysis.py job_summer12_WWW process_all_${timestamp}/
@@ -20,9 +25,7 @@ process_ntuple ../python/LNuAA_BasicSelectionAnalysis.py job_summer12_WWg proces
 process_ntuple ../python/LNuAA_BasicSelectionAnalysis.py job_summer12_WZZ process_all_${timestamp}/
 process_ntuple ../python/LNuAA_BasicSelectionAnalysis.py job_summer12_WZ_2l2q process_all_${timestamp}/
 process_ntuple ../python/LNuAA_BasicSelectionAnalysis.py job_summer12_WZ_3lnu process_all_${timestamp}/
-process_ntuple ../python/LNuAA_AnalysisDoubleIFSRVeto.py job_summer12_Wg process_all_${timestamp}/
 process_ntuple ../python/LNuAA_BasicSelectionAnalysis.py job_summer12_Wgg_FSR process_all_${timestamp}/
-process_ntuple ../python/LNuAA_AnalysisSingleIFSRVeto.py job_summer12_Wjets process_all_${timestamp}/
 process_ntuple ../python/LNuAA_BasicSelectionAnalysis.py job_summer12_ZZZ process_all_${timestamp}/
 process_ntuple ../python/LNuAA_BasicSelectionAnalysis.py job_summer12_ZZ_2e2mu process_all_${timestamp}/
 process_ntuple ../python/LNuAA_BasicSelectionAnalysis.py job_summer12_ZZ_2e2tau process_all_${timestamp}/
@@ -33,7 +36,7 @@ process_ntuple ../python/LNuAA_BasicSelectionAnalysis.py job_summer12_ZZ_2q2nu p
 process_ntuple ../python/LNuAA_BasicSelectionAnalysis.py job_summer12_ZZ_4e process_all_${timestamp}/
 process_ntuple ../python/LNuAA_BasicSelectionAnalysis.py job_summer12_ZZ_4mu process_all_${timestamp}/
 process_ntuple ../python/LNuAA_BasicSelectionAnalysis.py job_summer12_ZZ_4tau process_all_${timestamp}/
-process_ntuple ../python/LNuAA_AnalysisDoubleIFSRVeto.py job_summer12_Zg process_all_${timestamp}/
+process_ntuple ../python/LNuAA_BasicSelectionAnalysis.py job_summer12_Zg process_all_${timestamp}/
 process_ntuple ../python/LNuAA_BasicSelectionAnalysis.py job_summer12_diphoton_box_10to25 process_all_${timestamp}/
 process_ntuple ../python/LNuAA_BasicSelectionAnalysis.py job_summer12_diphoton_box_250toInf process_all_${timestamp}/
 process_ntuple ../python/LNuAA_BasicSelectionAnalysis.py job_summer12_diphoton_box_25to250 process_all_${timestamp}/
