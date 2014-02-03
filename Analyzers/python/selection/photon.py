@@ -1,4 +1,5 @@
 from ntuple_particle import ntuple_particle as particle
+from LNuAA_Analysis.Analyzers.memoized import memoized
 
 from ROOT import TVector3
 from math import cosh
@@ -45,6 +46,12 @@ class photon(particle):
 
     def photonIsoDR03(self):
         return self._row.phoPFPhoIso[self._index]
+
+    def photonSCRIsoDR04(self):
+        return self._row.phoSCRPhoIso04[self._index]
+
+    def photonRandConeIsoDR04(self):
+        return self._row.phoRandConePhoIso04[self._index]
 
     def hasIFSRParentage(self):
         pho_gen_idx = self._row.phoGenIndex[self._index]

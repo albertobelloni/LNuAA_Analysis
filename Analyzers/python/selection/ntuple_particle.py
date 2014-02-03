@@ -10,6 +10,9 @@ class ntuple_particle(object):
         self._index = i
         self._mass = 0
 
+    def __repr__(self):
+        print "%s%s%s"%(self._row,self._index,self._mass)
+
     def energy(self):
         pass
     def pt(self):

@@ -1,5 +1,6 @@
 from ntuple_particle import ntuple_particle as particle
 from math import sqrt
+from LNuAA_Analysis.Analyzers.memoized import memoized
 
 pfmu_mask  = 1<<5
 gblmu_mask = 1<<1
@@ -9,6 +10,7 @@ class muon(particle):
         particle.__init__(self,row,i)
         self._mass = 0.1056583715#in GeV
 
+    @memoized
     def energy(self):
         e2 = ( self._row.muPt[self._index]**2 +
                self._row.muPz[self._index]**2 +
