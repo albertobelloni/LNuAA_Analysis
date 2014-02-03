@@ -107,11 +107,22 @@ class LNuAA_BasicSelectionAnalysis(MegaBase):
 
             if( self.event_veto_mc_photon(photons) ): continue
 
-            # select leptons
+            # select leptons            
+            muons = filter(lambda x : x.pt() > 7, muons)
             muons = filter(tight_muon_id, muons)
-            muons = filter(loose_muon_iso, muons)
+            count_muons_id = len(muons)
+
+            electrons = filter(lambda x : x.pt() > 7, electrons)
             electrons = filter(electron_preselection, electrons)
             electrons = filter(triggering_electron_id, electrons)
+            count_electrons_id = len(electrons)            
+
+            ### loose lepton veto, don't isolate here since we need
+            ### the veto to be discriminating against crappy leptons
+            if( count_muons_id + count_electrons_id > 1 ): continue
+
+            #we want isolated electrons
+            muons = filter(loose_muon_iso, muons)
             electrons = filter(loose_electron_iso, electrons)
             
             # also kill photons that overlap with a selected electrons
