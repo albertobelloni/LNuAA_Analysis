@@ -19,6 +19,8 @@ from LNuAA_Analysis.Analyzers.selection.object_id_cuts import tight_muon_id, \
      loose_muon_iso, electron_preselection, triggering_electron_id, \
      loose_electron_iso, loose_photon_id, loose_photon_iso
 
+from LNuAA_Analysis.Analyzers.histograms import unblind_histograms as wgg_plots
+from LNuAA_Analysis.Analyzers.histograms import fill_standard_histos
 # Import various other code used by this module
 # We need this because of the "type = ROOT.TH2F" below
 import ROOT
@@ -59,21 +61,11 @@ class LNuAA_BasicSelectionAnalysis(MegaBase):
         """        
 
         # MegaBase includes some convenience methods for booking histograms.
-        # This books a 200 bin TH1F called "MyHistoName" into the "signal"
-        # folder.
-        self.book('mu_signal', 'muon_pT', 'p_{T}', 200, 10, 110)
-        self.book('mu_signal', 'muon_eta', '#eta', 200, -2.4, 2.4) 
-        self.book('mu_signal', 'photon1_pT', 'p_{T}', 200, 10, 110)
-        self.book('mu_signal', 'photon1_eta', 'p_{T}', 200, -2.5, 2.5)
-        self.book('mu_signal', 'photon2_pT', 'p_{T}', 200, 10, 110)
-        self.book('mu_signal', 'photon2_eta', 'p_{T}', 200, -2.5, 2.5)
-
-        self.book('el_signal', 'electron_pT', 'p_{T}', 200, 10, 110)
-        self.book('el_signal', 'electron_eta', '#eta', 200, -2.5, 2.5) 
-        self.book('el_signal', 'photon1_pT', 'p_{T}', 200, 10, 110)
-        self.book('el_signal', 'photon1_eta', 'p_{T}', 200, -2.5, 2.5)
-        self.book('el_signal', 'photon2_pT', 'p_{T}', 200, 10, 110)
-        self.book('el_signal', 'photon2_eta', 'p_{T}', 200, -2.5, 2.5)
+        ### extended here to easily fill a large list of histograms
+        for key in wgg_plots.keys():
+            for hconfig in wgg_plots[key]:                
+                if len( hconfig ) == 5: self.book(key,*hconfig)
+                else: self.book(key,*hconfig,type=ROOT.TH2F)        
 
         # How to make a 2D histo
         #self.book('signal', 'PtVsEta', 'p_{T} vs. #eta',
@@ -162,21 +154,14 @@ class LNuAA_BasicSelectionAnalysis(MegaBase):
             muons = sorted(muons,key=lambda x : x.pt(), reverse=True)
             photons = sorted(photons,key=lambda x : x.pt(), reverse=True)
 
-            if len(muons):
-                self.histograms['mu_signal/muon_pT'].Fill(muons[0].pt(),pu_weight)
-                self.histograms['mu_signal/muon_eta'].Fill(muons[0].eta(),pu_weight)
-                self.histograms['mu_signal/photon1_pT'].Fill(photons[0].pt(),pu_weight)
-                self.histograms['mu_signal/photon1_eta'].Fill(photons[0].eta(),pu_weight)
-                self.histograms['mu_signal/photon2_pT'].Fill(photons[1].pt(),pu_weight)
-                self.histograms['mu_signal/photon2_eta'].Fill(photons[1].eta(),pu_weight)
-            if len(electrons):
-                self.histograms['el_signal/electron_pT'].Fill(electrons[0].pt(),pu_weight)
-                self.histograms['el_signal/electron_eta'].Fill(electrons[0].eta(),pu_weight)
-                self.histograms['el_signal/photon1_pT'].Fill(photons[0].pt(),pu_weight)
-                self.histograms['el_signal/photon1_eta'].Fill(photons[0].eta(),pu_weight)
-                self.histograms['el_signal/photon2_pT'].Fill(photons[1].pt(),pu_weight)
-                self.histograms['el_signal/photon2_eta'].Fill(photons[1].eta(),pu_weight)
-                
+            if( len(muons) > 0 ):
+                fill_standard_histos(muons[0],photons[0],photons[1],
+                                     'muon/signal/all_pog_cuts',
+                                     self.histograms,pu_weight)
+            if( len(electrons) > 0 ):
+                fill_standard_histos(electrons[0],photons[0],photons[1],
+                                     'electron/signal/all_pog_cuts',
+                                     self.histograms,pu_weight)
 
     def event_veto_mc_photon(self,phos):
         return False

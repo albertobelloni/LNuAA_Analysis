@@ -3,6 +3,7 @@
 
 import ROOT
 from ROOT import TLorentzVector
+from LNuAA_Analysis.Analyzers.memoize import memoized
 
 class ntuple_particle(object):
     def __init__(self,row,i):
@@ -11,7 +12,7 @@ class ntuple_particle(object):
         self._mass = 0
 
     def __repr__(self):
-        print "%s%s%s"%(self._row,self._index,self._mass)
+        print "%s%s%s%s"%(self._index,self.pt(),self.eta(),self.phi())
 
     def energy(self):
         pass
@@ -21,7 +22,8 @@ class ntuple_particle(object):
         pass
     def phi(self):
         pass
-    
+
+    @memoized
     def p4(self):
         thep4 = TLorentzVector()
         thep4.SetPtEtaPhiE(self.pt(),self.eta(),self.phi(),self.energy())
