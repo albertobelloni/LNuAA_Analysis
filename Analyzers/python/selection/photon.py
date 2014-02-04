@@ -1,5 +1,5 @@
 from ntuple_particle import ntuple_particle as particle
-from LNuAA_Analysis.Analyzers.memoized import memoized
+from LNuAA_Analysis.Analyzers.memoize import memoized
 
 from ROOT import TVector3
 from math import cosh

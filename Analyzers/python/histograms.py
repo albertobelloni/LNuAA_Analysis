@@ -1,5 +1,5 @@
 from copy import deepcopy
-from memoized import memoized
+from LNuAA_Analysis.Analyzers.memoize import memoized
 
 
 def fill_standard_histos(lepton,photon1,photon2,directory,hlist,histos):
@@ -79,7 +79,7 @@ _pho2lep_histograms = [('lep_pho2_mass','Lepton + Subleading #gamma Mass (GeV)',
                        ('lep_pho2_mass','Lepton - Subleading #gamma #DeltaR',200,0,6)]
 
 _lepdipho_histograms = [('lep_dipho_vismass','W#gamma#gamma Visible Mass (GeV)',1000,0,1000),
-                        ('lep_dipho_mT','W#gamma#gamma Transverse Mass (GeV)'1000,0,1000),
+                        ('lep_dipho_mT','W#gamma#gamma Transverse Mass (GeV)',1000,0,1000),
                         ('leppho1_vs_leppho2_mass','m_{l#gamma^{1}} (GeV)','m_{l#gamma^{2} (GeV)',100,0,1000,100,0,1000)]
 
 _histos = ( _lepton_histograms   + _photon1_histograms + _photon2_histograms +

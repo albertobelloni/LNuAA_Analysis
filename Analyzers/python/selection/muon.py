@@ -1,6 +1,6 @@
 from ntuple_particle import ntuple_particle as particle
 from math import sqrt
-from LNuAA_Analysis.Analyzers.memoized import memoized
+from LNuAA_Analysis.Analyzers.memoize import memoized
 
 pfmu_mask  = 1<<5
 gblmu_mask = 1<<1

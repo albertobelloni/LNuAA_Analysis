@@ -23,6 +23,7 @@ from LNuAA_Analysis.Analyzers.selection.object_id_cuts import tight_muon_id, \
 # We need this because of the "type = ROOT.TH2F" below
 import ROOT
 
+import ROOT
 # define our analyzer class - it must be called MyAnalyzer, since that is
 # the name of this file.  It inherits from MegaBase.
 class LNuAA_BasicSelectionAnalysis(MegaBase):
@@ -39,8 +40,10 @@ class LNuAA_BasicSelectionAnalysis(MegaBase):
         **kwargs:   optionally extra keyword args can be passed (advanced)
         """
         self.tree = tree  # need to keep a reference to this for later
-        self.outputfile = outputfile
-        
+        self.outputfile = outputfile        
+    
+    def calc_puweight(self,row):        
+        return 1.0
 
     def begin(self):
         """ Let's book some histograms.
@@ -53,7 +56,7 @@ class LNuAA_BasicSelectionAnalysis(MegaBase):
 
         The keys of the dictionary are the full paths to the histograms.
 
-        """
+        """        
 
         # MegaBase includes some convenience methods for booking histograms.
         # This books a 200 bin TH1F called "MyHistoName" into the "signal"
@@ -99,6 +102,8 @@ class LNuAA_BasicSelectionAnalysis(MegaBase):
 
             if( ( row.nMu == 0 and row.nEle == 0 ) or row.nPho < 2 ):
                 continue
+
+            pu_weight = self.calc_puweight(row)
             
             #create basic lists of muons/electrons/photons
             electrons = [electron(row,iel) for iel in xrange(row.nEle)]
@@ -158,19 +163,19 @@ class LNuAA_BasicSelectionAnalysis(MegaBase):
             photons = sorted(photons,key=lambda x : x.pt(), reverse=True)
 
             if len(muons):
-                self.histograms['mu_signal/muon_pT'].Fill(muons[0].pt())
-                self.histograms['mu_signal/muon_eta'].Fill(muons[0].eta())
-                self.histograms['mu_signal/photon1_pT'].Fill(photons[0].pt())
-                self.histograms['mu_signal/photon1_eta'].Fill(photons[0].eta())
-                self.histograms['mu_signal/photon2_pT'].Fill(photons[1].pt())
-                self.histograms['mu_signal/photon2_eta'].Fill(photons[1].eta())
+                self.histograms['mu_signal/muon_pT'].Fill(muons[0].pt(),pu_weight)
+                self.histograms['mu_signal/muon_eta'].Fill(muons[0].eta(),pu_weight)
+                self.histograms['mu_signal/photon1_pT'].Fill(photons[0].pt(),pu_weight)
+                self.histograms['mu_signal/photon1_eta'].Fill(photons[0].eta(),pu_weight)
+                self.histograms['mu_signal/photon2_pT'].Fill(photons[1].pt(),pu_weight)
+                self.histograms['mu_signal/photon2_eta'].Fill(photons[1].eta(),pu_weight)
             if len(electrons):
-                self.histograms['el_signal/electron_pT'].Fill(electrons[0].pt())
-                self.histograms['el_signal/electron_eta'].Fill(electrons[0].eta())
-                self.histograms['el_signal/photon1_pT'].Fill(photons[0].pt())
-                self.histograms['el_signal/photon1_eta'].Fill(photons[0].eta())
-                self.histograms['el_signal/photon2_pT'].Fill(photons[1].pt())
-                self.histograms['el_signal/photon2_eta'].Fill(photons[1].eta())
+                self.histograms['el_signal/electron_pT'].Fill(electrons[0].pt(),pu_weight)
+                self.histograms['el_signal/electron_eta'].Fill(electrons[0].eta(),pu_weight)
+                self.histograms['el_signal/photon1_pT'].Fill(photons[0].pt(),pu_weight)
+                self.histograms['el_signal/photon1_eta'].Fill(photons[0].eta(),pu_weight)
+                self.histograms['el_signal/photon2_pT'].Fill(photons[1].pt(),pu_weight)
+                self.histograms['el_signal/photon2_eta'].Fill(photons[1].eta(),pu_weight)
                 
 
     def event_veto_mc_photon(self,phos):
